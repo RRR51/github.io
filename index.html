@@ -790,6 +790,123 @@
                 padding: 0px;
             }
         }
+
+        /* ========================================
+           PORTRAIT MODE (세로 비율: 가로 < 세로)
+           aspect-ratio 9/16 이하일 때 (세로가 가로의 약 1.78배 이상)
+           ======================================== */
+        @media (max-aspect-ratio: 3/4) {
+            /* 캐러셀 썸네일 크기 증가 */
+            .carousel-item {
+                max-width: 180px !important;
+                padding: 8px;
+            }
+
+            /* 캐러셀 위치 조정 */
+            .carousel-container {
+                top: 45%;
+            }
+
+            /* 모달 설명 섹션: 2단 -> 1단 레이아웃 */
+            .modal-info-section {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 40px 20px;
+            }
+
+            /* 제목 크기 조정 */
+            .modal-project-title {
+                font-size: 2rem;
+            }
+
+            /* 갤러리 컨테이너 패딩 줄이기 */
+            .gallery-container {
+                padding: 0 15px 60px 15px;
+                max-width: 100%;
+            }
+
+            /* 갤러리 Row - 모든 이미지 1단으로 (가로 전체 너비) */
+            .gallery-row {
+                flex-direction: column;
+            }
+
+            .gallery-row .gallery-item {
+                flex: 0 0 100% !important;
+                width: 100% !important;
+            }
+
+            /* 호버 프로젝트 타이틀 위치 조정 */
+            .hover-project-title.left {
+                left: 20px;
+            }
+
+            .hover-project-title.right {
+                right: 20px;
+            }
+
+            /* 3D 축 인디케이터 크기 및 위치 조정 */
+            .axis-indicator {
+                width: 70px;
+                height: 70px;
+                top: 20px;
+                right: 20px;
+            }
+        }
+
+        /* 더 좁은 세로 비율 (스마트폰 세로 모드) */
+        @media (max-aspect-ratio: 9/16) {
+            .carousel-item {
+                max-width: 200px !important;
+            }
+
+            .modal-info-section {
+                padding: 30px 15px;
+                gap: 25px;
+            }
+
+            .modal-project-title {
+                font-size: 1.8rem;
+            }
+
+            .modal-project-description {
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+
+            .gallery-container {
+                padding: 0 10px 50px 10px;
+                gap: 8px;
+            }
+        }
+
+        /* 세로 모드 + 작은 화면 조합 */
+        @media (max-aspect-ratio: 3/4) and (max-width: 500px) {
+            .carousel-item {
+                max-width: 150px !important;
+            }
+
+            .top-name {
+                font-size: 0.8rem;
+            }
+
+            .top-description {
+                font-size: 0.7rem;
+            }
+
+            .top-links {
+                font-size: 0.7rem;
+            }
+
+            .modal-meta-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .modal-close {
+                top: 10px;
+                right: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1774,6 +1891,10 @@ A new-tro aesthetic inspired by hand-painted theater signage was used to establi
 
         // 비율에 따라 flex-basis 계산 및 적용
         function applyRatios(rowEl, items, ratios, gap) {
+            // 세로 모드(portrait)에서는 CSS가 처리하므로 건너뛰기
+            const isPortrait = window.innerHeight / window.innerWidth > 4/3;
+            if (isPortrait) return;
+            
             const totalRatio = ratios.reduce(function(sum, r) { return sum + r; }, 0);
             const totalGap = gap * (items.length - 1);
             
