@@ -1639,12 +1639,43 @@ A new-tro aesthetic inspired by hand-painted theater signage was used to establi
                     this.mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
                 });
 
+                // 터치 스와이프 관련 변수
+                let touchStartX = 0;
+                let touchStartY = 0;
+                let touchEndX = 0;
+                let isSwiping = false;
+
+                // 터치 시작
+                document.addEventListener('touchstart', (e) => {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    isSwiping = true;
+                }, { passive: true });
+
+                // 터치 이동 중 - 실시간 회전
                 document.addEventListener('touchmove', (e) => {
+                    if (!isSwiping) return;
+                    
+                    const touchCurrentX = e.touches[0].clientX;
+                    const deltaX = touchCurrentX - touchStartX;
+                    
+                    // 스와이프 거리에 비례해서 회전 (감도 조절)
+                    this.targetRotationY += deltaX * 0.003;
+                    
+                    // 시작점 업데이트 (연속적인 회전을 위해)
+                    touchStartX = touchCurrentX;
+                    
+                    // 기존 마우스 위치 업데이트 로직
                     if (e.touches.length > 0) {
                         this.mouseX = (e.touches[0].clientX / window.innerWidth - 0.5) * 2;
                         this.mouseY = (e.touches[0].clientY / window.innerHeight - 0.5) * 2;
                     }
-                });
+                }, { passive: true });
+
+                // 터치 종료 - 관성 효과
+                document.addEventListener('touchend', (e) => {
+                    isSwiping = false;
+                }, { passive: true });
 
                 // 캐러셀 컨테이너 영역 호버 감지 (hero-3d 섹션 전체)
                 const heroSection = document.getElementById('hero3d');
