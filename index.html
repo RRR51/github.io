@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chang Ji Young - Portfolio</title>
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --text-color: #ffffff;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html {
+            height: 100%;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            position: relative;
+        }
+        body.modal-open { overflow: hidden; }
+        a { text-decoration: none; color: inherit; cursor: pointer;}
+
+        /* 전체 페이지 오버플로우 방지 */
+        #root, main, .wrapper {
+            overflow: hidden;
+        }
+
+        /* ========================================
+           GRID BACKGROUND
+           ======================================== */
+        .grid-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            overflow: visible;
+        }
+
+        .grid-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 가로 격자선 - 가로 전체 길이 */
+        .grid-horizontal {
+            position: absolute;
+            left: 0;
+            width: 100vw;
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* 세로 격자선 - 세로 전체 길이 */
+        .grid-vertical {
+            position: absolute;
+            top: 0;
+            width: 1px;
+            height: 100vh;
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* 상단 대각선 */
+        .grid-diagonal {
+            position: absolute;
+            top: 20px;
+            width: 150px;
+            height: 150px;
+            overflow: hidden;
+        }
+
+        .grid-diagonal-left {
+            left: 20px;
+        }
+
+        .grid-diagonal-right {
+            right: 20px;
+        }
+
+        .grid-diagonal::after {
+            content: '';
+            position: absolute;
+            width: var(--diagonal-length, 212px);
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.15);
+            transform-origin: 0 0;
+        }
+
+        .grid-diagonal-left::after {
+            top: 0;
+            left: 0;
+            transform: rotate(45deg);
+        }
+
+        .grid-diagonal-right::after {
+            top: 0;
+            right: 0;
+            left: auto;
+            transform-origin: 100% 0;
+            transform: rotate(-45deg);
+        }
+
+        /* ========================================
+           3D CAROUSEL HERO SECTION
+           ======================================== */
+        .hero-3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1600px;
+            overflow: hidden;
+            z-index: 10;
+            background-color: transparent;
+        }
+
+        .carousel-scene {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            overflow: hidden;
+        }
+
+        .carousel-container {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            transform-style: preserve-3d;
+            transform: translateX(-50%) translateY(-50%) rotateX(-15deg);
+        }
+
+        .carousel-item {
+            position: absolute;
+            /* 기본 크기는 JS에서 이미지 로드 후 설정됨 */
+            max-width: 200px;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                        box-shadow 0.1s ease,
+                        filter 0.4s ease,
+                        opacity 0.6s ease;
+            opacity: 0;
+            /* 이미지 간격을 위한 패딩 */
+            padding: 10px;
+            /* 세로 가운데 정렬을 위한 설정 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform-origin: center center;
+        }
+
+        .carousel-item.visible {
+            opacity: 1;
+        }
+
+        .carousel-item img,
+        .carousel-item video {
+            width: 100%;
+            height: auto; /* 실제 비율 유지 */
+            display: block;
+            object-fit: contain; /* cover에서 contain으로 변경하여 비율 유지 */
+            border-radius: 0px;
+            box-shadow: 0 0px 0px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+
+        /* 호버시 20% 확대 - JS에서 처리 */
+        .carousel-item:hover {
+            z-index: 5000 !important;
+        }
+
+        .carousel-item:hover img,
+        .carousel-item:hover video {
+            box-shadow: 0 0px 0px rgba(0, 0, 0, 0.8);
+        }
+
+        /* 호버 시 프로젝트 명 표시 */
+        .hover-project-title {
+            position: fixed;
+            top: 47%;
+            transform: translateY(-50%);
+            font-size: clamp(1rem, 2vw, 2rem);
+            font-weight: 400;
+            color: var(--text-color);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 4999;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            mix-blend-mode: difference;
+        }
+
+        .hover-project-title.left {
+            left: 40px;
+        }
+
+        .hover-project-title.right {
+            right: 40px;
+        }
+
+        .hover-project-title.visible {
+            opacity: 1;
+        }
+
+        /* Hero Brand Text */
+        .hero-brand {
+            position: fixed;
+            top: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .hero-brand-text {
+            font-size: clamp(0.5rem, 3vw, 10rem);
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: var(--text-color);
+            text-transform: uppercase;
+            opacity: 0.95;
+            mix-blend-mode: difference;
+            writing-mode: horizontal-tb;
+            transform: none;
+        }
+
+        .hero-brand-left {
+            /* 기존 세로 스타일 제거 */
+        }
+
+        .hero-brand-right {
+            /* 기존 세로 스타일 제거 */
+        }
+
+        /* Hero Info */
+        .hero-info {
+            position: fixed;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 1;
+            max-width: 400px;
+        }
+
+        /* Top Left Name */
+        .top-name {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            font-size: clamp(0.7rem, 2vw, 1.5rem);
+            font-weight: 400;
+            color: var(--text-color);
+            z-index: 100;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        /* Top Left Description */
+        .top-description {
+            position: fixed;
+            top: 40px;
+            font-size: clamp(0.7rem, 1vw, 0.9rem);
+            font-weight: 400;
+            color: var(--text-color);
+            line-height: 1.4;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        /* Top Right Links */
+        .top-links {
+            position: fixed;
+            top: 40px;
+            text-align: right;
+            font-size: clamp(0.7rem, 1vw, 0.9rem);
+            font-weight: 400;
+            z-index: 100;
+            display: flex;
+            gap: 30px;
+        }
+
+        .top-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        .top-links a:hover {
+            opacity: 0.5;
+        }
+
+        /* 세로 비율 (가로:세로 = 1:1.3 이상, 즉 세로가 가로의 1.3배 이상일 때) */
+        @media (max-aspect-ratio: 10/13) {
+            .top-name {
+                top: 40px;
+                left: 40px;
+            }
+
+            .top-description {
+                top: 70px !important;
+                left: 40px !important;
+            }
+
+            .top-links {
+                top: 40px;
+                right: 150px !important;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 3px;
+            }
+        }
+
+        /* Bottom Full Width Brand */
+        .bottom-brand {
+            position: fixed;
+            bottom: 40px;
+            left: 40px;
+            right: 40px;
+            font-weight: 400;
+            color: var(--text-color);
+            z-index: 1;
+            pointer-events: none;
+            text-align: justify;
+            text-align-last: justify;
+            letter-spacing: 0.1em;
+            line-height: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .bottom-brand.dimmed {
+            opacity: 0.7;
+        }
+
+        /* Bottom Subtitle Container */
+        .bottom-subtitle-container {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 40px;
+            z-index: 1;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .bottom-subtitle-container.dimmed {
+            opacity: 0.7;
+        }
+
+        .bottom-subtitle-left,
+        .bottom-subtitle-center,
+        .bottom-subtitle-right {
+            position: absolute;
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--text-color);
+        }
+
+        .bottom-subtitle-left {
+            left: 40px;
+        }
+
+        .bottom-subtitle-center {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .bottom-subtitle-right {
+            right: 40px;
+        }
+
+        /* Grid Number Label */
+        .grid-number {
+            position: fixed;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 0.8rem;
+            font-weight: 100;
+            color: rgba(255, 255, 255, 0.8);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .grid-number-left {
+            left: 22px;
+        }
+
+        .grid-number-right {
+            right: 22px;
+        }
+
+        /* ========================================
+           3D AXIS INDICATOR
+           ======================================== */
+        .axis-indicator {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            width: 100px;
+            height: 100px;
+            z-index: 50;
+            cursor: grab;
+            perspective: 200px;
+        }
+
+        .axis-indicator:active {
+            cursor: grabbing;
+        }
+
+        .axis-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(-20deg) rotateY(-20deg);
+            transition: transform 0.05s ease-out;
+        }
+
+        .axis {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-style: preserve-3d;
+        }
+
+        .axis-line {
+            position: absolute;
+            background: currentColor;
+            transform-origin: 0 50%;
+        }
+
+        .axis-arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+
+        /* Y Axis (Blue - Up) */
+        .axis-y {
+            color: #3B82F6;
+        }
+        .axis-y .axis-line {
+            width: 2px;
+            height: 40px;
+            transform: translateX(-1px) translateY(-40px);
+        }
+        .axis-y .axis-arrow {
+            border-width: 0 5px 10px 5px;
+            border-color: transparent transparent #3B82F6 transparent;
+            transform: translateX(-5px) translateY(-42px);
+        }
+
+        /* X Axis (Red - Right) */
+        .axis-x {
+            color: #EF4444;
+        }
+        .axis-x .axis-line {
+            width: 40px;
+            height: 2px;
+            transform: rotateY(0deg) translateY(-1px);
+        }
+        .axis-x .axis-arrow {
+            border-width: 5px 0 5px 10px;
+            border-color: transparent transparent transparent #EF4444;
+            transform: translateX(40px) translateY(-5px);
+        }
+
+        /* Z Axis (Green - Forward) */
+        .axis-z {
+            color: #22C55E;
+        }
+        .axis-z .axis-line {
+            width: 2px;
+            height: 40px;
+            transform: rotateX(90deg) translateY(-1px);
+            transform-origin: 0 0;
+        }
+        .axis-z .axis-arrow {
+            border-width: 0 5px 10px 5px;
+            border-color: transparent transparent #22C55E transparent;
+            transform: rotateX(270deg) translateX(-4px) translateY(-42px);
+            transform-origin: 0 0;
+        }
+
+        /* Center point */
+        .axis-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* ========================================
+           MODAL
+           ======================================== */
+        .project-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background-color: rgba(0, 0, 0, 100);
+            z-index: 5000;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            overflow: hidden;
+        }
+
+        .project-modal.active { 
+            opacity: 1; 
+            visibility: visible; 
+            pointer-events: auto;
+        }
+
+        .modal-close {
+            position: fixed;
+            top: 15px; 
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            font-size: 0;
+            color: #fff;
+            cursor: pointer;
+            z-index: 5020;
+            background: transparent;
+            border: none;
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-close::before,
+        .modal-close::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 16px;
+            height: 1.5px;
+            background-color: #fff;
+        }
+
+        .modal-close::before {
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .modal-close::after {
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+
+        .modal-close:hover { 
+            opacity: 1;
+        }
+
+        /* 히어로 이미지 (1번 이미지) - 고정 */
+        .modal-hero {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 5001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #000;
+        }
+
+        .modal-hero img,
+        .modal-hero video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 스크롤 가능한 컨텐츠 영역 */
+        .modal-scroll-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 5010;
+        }
+
+        /* 스크롤 시작 전 빈 공간 (히어로 이미지 보이는 영역) */
+        .modal-spacer {
+            height: 100vh;
+            pointer-events: none;
+        }
+
+        /* 설명글 + 이미지 컨테이너 */
+        .modal-content-wrapper {
+            background-color: #0a0a0a;
+            min-height: 100vh;
+        }
+
+        /* 설명글 섹션 - 2단 레이아웃 */
+        .modal-info-section {
+            padding: 60px 50px;
+            color: #fff;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 1단: 제목, 연도, 롤 */
+        .modal-left-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .modal-project-title {
+            font-size: 3rem;
+            font-weight: 400;
+            text-transform: uppercase;
+            line-height: 1.2;
+        }
+
+        .modal-meta-row {
+            display: flex;
+            gap: 40px;
+        }
+
+        .modal-meta-item {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .modal-meta-key {
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            opacity: 0.5;
+        }
+
+        .modal-meta-value {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* 2단: 설명글 */
+        .modal-right-info {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .modal-project-description {
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.8;
+            opacity: 0.8;
+            margin: 0;
+            white-space: pre-line;
+        }
+
+        /* 갤러리 컨테이너 (2번 이미지부터) */
+        .gallery-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 50px 80px 50px;
+            box-sizing: border-box;
+        }
+
+        .gallery-container > img,
+        .gallery-container > video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* 갤러리 Row 레이아웃 (1단, 2단, 3단) */
+        .gallery-row {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            align-items: flex-start;
+        }
+
+        .gallery-row .gallery-item {
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .gallery-row .gallery-item img,
+        .gallery-row .gallery-item video {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        /* 1단 레이아웃 - 항상 100% */
+        .gallery-row.cols-1 .gallery-item {
+            flex: 0 0 100%;
+        }
+
+        /* 2단, 3단은 JS에서 비율 계산하여 flex-basis 적용 */
+
+        /* ========================================
+           RESPONSIVE
+           ======================================== */
+        @media (max-width: 1200px) {
+            .carousel-item {
+                max-width: 160px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .hero-brand-text {
+                font-size: clamp(1rem, 2vw, 1rem);
+            }
+            
+            .carousel-item {
+                max-width: 140px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero-brand {
+                padding: 0 15px;
+            }
+
+            .hero-brand-text {
+                font-size: clamp(1rem, 2vw, 1rem);
+            }
+
+            .carousel-item {
+                max-width: 100px;
+            }
+
+            .hero-info {
+                top: 20px;
+                padding: 0 20px;
+            }
+
+            .hero-intro-text {
+                font-size: 0.85rem;
+            }
+
+            .hero-bottom-section {
+                bottom: 70px;
+                left: 20px;
+                right: 20px;
+            }
+
+            .hero-notes-text {
+                font-size: 0.8rem;
+            }
+
+            .fixed-bar {
+                padding: 0px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Grid Background -->
+    <div class="grid-background" id="gridBackground">
+        <div class="grid-lines" id="gridLines">
+            <!-- 격자선은 JavaScript로 생성 -->
+        </div>
+        <!-- 상단 대각선 -->
+        <div class="grid-diagonal grid-diagonal-left"></div>
+        <div class="grid-diagonal grid-diagonal-right"></div>
+    </div>
+
+    <!-- 3D Carousel Hero -->
+    <section class="hero-3d" id="hero3d">
+        <div class="carousel-scene">
+            <div class="carousel-container" id="carouselContainer">
+                <!-- Items will be generated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Hover Project Titles -->
+    <div class="hover-project-title left" id="hoverTitleLeft"></div>
+    <div class="hover-project-title right" id="hoverTitleRight"></div>
+
+
+    <!-- Grid Numbers Left -->
+    <div class="grid-number grid-number-left" id="gridNumber15">'15</div>
+    <div class="grid-number grid-number-left" id="gridNumber18">'18</div>
+    <div class="grid-number grid-number-left" id="gridNumber22">'22</div>
+    <div class="grid-number grid-number-left" id="gridNumber25">'25</div>
+
+    <!-- Grid Numbers Right -->
+    <div class="grid-number grid-number-right" id="gridNumber15R">'15</div>
+    <div class="grid-number grid-number-right" id="gridNumber18R">'18</div>
+    <div class="grid-number grid-number-right" id="gridNumber22R">'22</div>
+    <div class="grid-number grid-number-right" id="gridNumber25R">'25</div>
+
+    <!-- 3D Axis Indicator -->
+    <div class="axis-indicator" id="axisIndicator">
+        <div class="axis-container" id="axisContainer">
+            <!-- Y Axis (Blue - Up) -->
+            <div class="axis axis-y">
+                <div class="axis-line"></div>
+                <div class="axis-arrow"></div>
+            </div>
+            <!-- X Axis (Red - Right) -->
+            <div class="axis axis-x">
+                <div class="axis-line"></div>
+                <div class="axis-arrow"></div>
+            </div>
+            <!-- Z Axis (Green - Forward) -->
+            <div class="axis axis-z">
+                <div class="axis-line"></div>
+                <div class="axis-arrow"></div>
+            </div>
+            <!-- Center point -->
+            <div class="axis-center"></div>
+        </div>
+    </div>
+
+    <!-- Hero Info -->
+    <div class="hero-info">
+
+    </div>
+
+    <!-- Top Left Name -->
+    <div class="top-name" id="topName">JIYOUNG CHANG</div>
+
+    <!-- Top Left Description -->
+    <div class="top-description" id="topDescription">Graphic Designer<br>based in Seoul.</div>
+
+    <!-- Top Right Links -->
+    <div class="top-links" id="topLinks">
+        <a href="/cdn-cgi/l/email-protection#bdd5dccfcfc48a8a848afddad0dcd4d193ded2d0">E-mail</a>
+        <a href="https://www.instagram.com/_910820" target="_blank">Instagram</a>
+        <a href="https://www.behance.net/RRR51" target="_blank">Behance</a>
+    </div>
+
+    <!-- Bottom Full Width Text -->
+    <div class="bottom-brand" id="bottomBrand">CⓃST</div>
+    <div class="bottom-subtitle-container" id="bottomSubtitleContainer">
+        <span class="bottom-subtitle-left">COLOR</span>
+        <span class="bottom-subtitle-center">AND</span>
+        <span class="bottom-subtitle-right">STRUCTURE</span>
+    </div>
+
+    <!-- Modal -->
+    <div class="project-modal" id="projectModal">
+        <span class="modal-close" onclick="closeModal()">Close</span>
+        
+        <!-- 히어로 이미지 (1번 이미지) - 고정 배경 -->
+        <div class="modal-hero" id="modalHero"></div>
+        
+        <!-- 스크롤 가능한 컨텐츠 -->
+        <div class="modal-scroll-content" id="modalScrollContent">
+            <!-- 빈 공간 (히어로 이미지가 보이는 영역) -->
+            <div class="modal-spacer"></div>
+            
+            <!-- 설명글 + 나머지 이미지 -->
+            <div class="modal-content-wrapper">
+                <div class="modal-info-section">
+                    <!-- 1단: 제목, 연도, 롤 -->
+                    <div class="modal-left-info">
+                        <span class="modal-project-title" id="modalTitle">Project Title</span>
+                        <div class="modal-meta-row">
+                            <div class="modal-meta-item">
+                                <span class="modal-meta-key">Year</span>
+                                <span class="modal-meta-value" id="modalYear">2024</span>
+                            </div>
+                            <div class="modal-meta-item">
+                                <span class="modal-meta-key">Role</span>
+                                <span class="modal-meta-value" id="modalRole">Poster Design</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 2단: 설명글 -->
+                    <div class="modal-right-info">
+                        <p class="modal-project-description" id="modalDescription">Project description here.</p>
+                    </div>
+                </div>
+                <div class="gallery-container" id="galleryContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        // ========================================
+        // ALL PROJECT DATA
+        // ========================================
+        const projectData = [
+            {
+                folder: 'DINKUM_Rebranding',
+                title: 'DINKUM Rebranding',
+                thumb: 'portfolio_images/DINKUM_Rebranding/DINKUM_Rebranding_Thumb.jpg',
+                images: ["DINKUM_Rebranding_001.mp4","DINKUM_Rebranding_002.jpg","DINKUM_Rebranding_002.mp4","DINKUM_Rebranding_003.jpg","DINKUM_Rebranding_004.mp4","DINKUM_Rebranding_005.mp4","DINKUM_Rebranding_006.jpg","DINKUM_Rebranding_007.mp4","DINKUM_Rebranding_008.mp4","DINKUM_Rebranding_009.mp4","DINKUM_Rebranding_010.jpg","DINKUM_Rebranding_011.jpg"],
+                description: `With the transition of DINKUM Together under KRAFTON publishing, the project required a brand identity capable of scaling across multiple regions. Rather than focusing on a single logo redesign, the objective was to establish a flexible and sustainable brand system.
+
+Visual Decisions
+The logo was redesigned as a modular system to support localization across three Asian markets while maintaining consistency. To ensure long-term usability, a comprehensive design guideline was developed, including typography, color systems, and documentation templates. The primary focus was placed on operational longevity and scalability, rather than short-term visual impact.`,
+                year: '2025',
+                role: 'Brand Design, Logo Design',
+                // 레이아웃 예시: images 배열만으로 구성 (개수에 따라 자동으로 n단 적용, 비율도 자동 계산)
+                layout: [
+                    { images: ["DINKUM_Rebranding_005.mp4"] },
+                    { images: ["DINKUM_Rebranding_002.jpg"] },
+                    { images: ["DINKUM_Rebranding_003.jpg", "DINKUM_Rebranding_002.mp4"] },
+                    { images: ["DINKUM_Rebranding_008.mp4", "DINKUM_Rebranding_004.mp4"] },
+                    { images: ["DINKUM_Rebranding_010.mp4"] },
+                    { images: ["DINKUM_Rebranding_006.jpg"] },
+                    { images: ["DINKUM_Rebranding_009.mp4"] },
+                    { images: ["DINKUM_Rebranding_010.jpg"] },
+                    { images: ["DINKUM_Rebranding_011.jpg"] }
+                ]
+            
+            },
+            {
+                folder: 'PUBG_Keyart',
+                title: 'PUBG Keyart',
+                thumb: 'portfolio_images/PUBG_Keyart/PUBG_Keyart_Thumb.png',
+                images: ["PUBG_Keyart_001.jpg","PUBG_Keyart_002.png","PUBG_Keyart_003.png","PUBG_Keyart_004.png","PUBG_Keyart_005.jpg","PUBG_Keyart_006.jpg","PUBG_Keyart_007.jpg","PUBG_Keyart_008.png","PUBG_Keyart_009.png","PUBG_Keyart_010.png","PUBG_Keyart_011.jpg","PUBG_Keyart_012.png","PUBG_Keyart_013.png","PUBG_Keyart_014.jpg","PUBG_Keyart_015.png","PUBG_Keyart_016.jpg"],
+                description: `Key art developed for multiple campaigns and seasonal updates within a long-term live service environment.
+
+System Thinking
+Each artwork needed to clearly communicate gameplay changes while remaining consistent within PUBG's established visual universe. The production process spanned 2D and 3D workflows, including Unreal Engine captures and AI-assisted retouching.`,
+                year: '2022-2025',
+                role: 'Keyart Design'
+            },
+            {
+                folder: 'PUBGxNewjeans_Collaboration',
+                title: 'PUBG x NewJeans',
+                thumb: 'portfolio_images/PUBGxNewjeans_Collaboration/PUBGxNewjeans_Collaboration_001.webm',
+                images: ["PUBGxNewjeans_Collaboration_001.png","PUBGxNewjeans_Collaboration_002.mp4","PUBGxNewjeans_Collaboration_002.png","PUBGxNewjeans_Collaboration_003.png","PUBGxNewjeans_Collaboration_004.png","PUBGxNewjeans_Collaboration_005.png","PUBGxNewjeans_Collaboration_006.png","PUBGxNewjeans_Collaboration_007.png"],
+                description: `This collaboration required careful alignment between PUBG's established game IP and NewJeans' distinct visual identity. The core challenge was achieving balance without allowing either brand to overpower the other.
+
+Visual Decisions
+Both teaser and standalone key art were designed to function independently across global platforms. From concept development to photoshoot planning and on-site direction, the visual tone was consistently aligned to support both identities.`,
+                year: '2024',
+                role: 'Keyart Design, Photoshoot Planning & On-Site Direction',
+                layout: [
+                    { images: ["PUBGxNewjeans_Collaboration_002.mp4"] },
+                    { images: ["PUBGxNewjeans_Collaboration_002.png"] },
+                    { images: ["PUBGxNewjeans_Collaboration_006.png", "PUBGxNewjeans_Collaboration_005.png"] },
+                    { images: ["PUBGxNewjeans_Collaboration_004.png", "PUBGxNewjeans_Collaboration_003.png", "PUBGxNewjeans_Collaboration_007.png"] }
+                ]
+            },
+            {
+                folder: 'Blindspot_Character_Teaser',
+                title: 'Blindspot Character Teaser',
+                thumb: 'portfolio_images/Blindspot_Character_Teaser/Blindspot_Character_Teaser_Thumb.mp4',
+                thumbType: 'video',
+                images: ["Blindspot_Character_Teaser_000.jpg","Blindspot_Character_Teaser_001.jpg","Blindspot_Character_Teaser_002.jpg","Blindspot_Character_Teaser_003.jpg","Blindspot_Character_Teaser_004.jpg","Blindspot_Character_Teaser_005.jpg","Blindspot_Character_Teaser_006.jpg","Blindspot_Character_Teaser_007.jpg","Blindspot_Character_Teaser_008.jpg"],
+                description: `Character teaser design for BLINDSPOT, a top-down shooter game. The visual approach emphasizes the game's core mechanic—field of view—through dynamic character presentations.`,
+                year: '2025',
+                role: 'Character Teaser Design',
+                layout: [
+                    { images: ["Blindspot_Character_Teaser_002.jpg", "Blindspot_Character_Teaser_001.jpg"] },
+                    { images: ["Blindspot_Character_Teaser_006.jpg", "Blindspot_Character_Teaser_004.jpg", "Blindspot_Character_Teaser_003.jpg"] },
+                    { images: ["Blindspot_Character_Teaser_007.jpg", "Blindspot_Character_Teaser_005.jpg", "Blindspot_Character_Teaser_008.jpg"] },
+                    { images: [] }
+                ]
+            },
+            {
+                folder: 'RONDO_Campaign-Title',
+                title: 'RONDO : Campaign Title',
+                thumb: 'portfolio_images/RONDO_Campaign-Title/RONDO_Campaign-Title_Thumb.mp4',
+                thumbType: 'video',
+                images: ["RONDO_Campaign-Title_000.jpg","RONDO_Campaign-Title_001.jpg","RONDO_Campaign-Title_002.jpg","RONDO_Campaign-Title_004.jpg","RONDO_Campaign-Title_005.jpg","RONDO_Campaign-Title_006.jpg","RONDO_Campaign-Title_007.jpg"],
+                description: `Campaign title design for RONDO brand identity. The project focused on creating a distinctive visual language that bridges traditional aesthetics with modern gaming culture.`,
+                year: '2023',
+                role: 'Logo Design, Title Design',
+                layout: [
+                    { images: ["RONDO_Campaign-Title_002.jpg", "RONDO_Campaign-Title_001.jpg"] },
+                    { images: ["RONDO_Campaign-Title_006.jpg"] },
+                    { images: ["RONDO_Campaign-Title_005.jpg"] },
+                    { images: ["RONDO_Campaign-Title_007.jpg"] }
+                ]
+
+            },
+            {
+                folder: 'RONDO',
+                title: 'RONDO : Ground of Honor',
+                thumb: 'portfolio_images/RONDO/RONDO_Thumb.jpg',
+                images: ["RONDO_001.jpg","RONDO_002.jpg","RONDO_003.jpg","RONDO_004.jpg","RONDO_005.jpg","RONDO_006.jpg","RONDO_007.jpg","RONDO_008.jpg","RONDO_009.jpg","RONDO_010.jpg","RONDO_011.jpg"],
+                description: `RONDO, a Chinese-inspired map, required balancing cultural identity with PUBG's signature intensity.
+
+Custom Chinese calligraphy was created in collaboration with calligrapher Lee Gyubok and combined with PUBG's typography using strong textures. The key art visually completed the campaign's cinematic confrontation narrative.`,
+                year: '2023',
+                role: 'Logo Design, Keyart Design',
+                layout: [
+                    { images: ["RONDO_001.jpg"] },
+                    { images: ["RONDO_002.jpg"] },
+                    { images: ["RONDO_004.jpg", "RONDO_003.jpg"] },
+                    { images: ["RONDO_005.jpg"] },
+                    { images: ["RONDO_007.jpg", "RONDO_006.jpg"] },
+                    { images: ["RONDO_008.jpg"] },
+                    { images: ["RONDO_010.jpg", "RONDO_009.jpg"] },
+                    { images: ["RONDO_011.jpg"] }
+                ]
+            },
+            {
+                folder: 'Blindspot_Branding',
+                title: 'BLINDSPOT Branding',
+                thumb: 'portfolio_images/Blindspot_Branding/Blindspot_Branding_Thumb.mp4',
+                thumbType: 'video',
+                images: ["Blindspot_Branding_001.png","Blindspot_Branding_001.mp4","Blindspot_Branding_002.jpg","Blindspot_Branding_003.jpg","Blindspot_Branding_004.jpg","Blindspot_Branding_005.jpg","Blindspot_Branding_006.jpg","Blindspot_Branding_007.jpg","Blindspot_Branding_008.jpg","Blindspot_Branding_009.jpg","Blindspot_Branding_0010.jpg","Blindspot_Branding_0011.jpg","Blindspot_Branding_0012.jpg","Blindspot_Branding_0013.jpg","Blindspot_Branding_0014.jpg","Blindspot_Branding_0015.jpg","Blindspot_Branding_0016.jpg","Blindspot_Branding_0017.jpg","Blindspot_Branding_0018.jpg","Blindspot_Branding_0019.jpg"],
+                description: `Originally an internal project, BLINDSPOT required a full branding system upon becoming an official title.
+
+Visual System
+As a top-down shooter, the game's core mechanic—field of view—became the foundation of its visual identity. Diagonal elements symbolizing vision angles were integrated into the negative space of the logo. A comprehensive brand guideline was developed, including typography, color systems, character palettes, and documentation templates.`,
+                year: '2025',
+                role: 'Brand Design, Logo Design',
+                layout: [
+                    { images: ["Blindspot_Branding_000.mp4"] },
+                    { images: ["Mockup_BLINDSPOT_02.png"] },
+                    { images: ["Blindspot_Branding_002.jpg"] },
+                    { images: ["Blindspot_Branding_008.jpg"] },
+                    { images: ["Blindspot_Branding_0014.jpg"] },
+                    { images: ["Blindspot_Branding_0015.jpg"] },
+                    { images: ["Blindspot_Branding_0016.jpg"] },
+                    { images: ["Blindspot_Branding_0017.jpg"] },
+                    { images: ["Blindspot_Branding_0018.jpg"] },
+                    { images: ["Blindspot_Branding_0020.png"] },
+                    { images: ["Mockup_BLINDSPOT_01.png"] }
+                ]
+            },
+            {
+                folder: 'K-Typo',
+                title: 'K-Typo',
+                thumb: 'portfolio_images/K-Typo/K-Typo_Thumb.jpg',
+                images: ["K-Typo_002.jpg","K-Typo_003.jpg","K-Typo_004.jpg","K-Typo_005.jpg","K-Typo_006.jpg","K-Typo_007.jpg","K-Typo_008.jpg","K-Typo_009.jpg","K-Typo_010.jpg","K-Typo_011.jpg","K-Typo_012.jpg"],
+                description: `A collection of lettering and typographic works created for clients including Netflix, Warner Bros., and CJ ENM.
+
+Visual Decisions
+Each project explored how typography alone could define tone, genre, and brand personality. Some works were exploratory and unpublished; copyrights for released works belong to the respective clients.`,
+                year: '2018-2021',
+                role: 'Brand Design, Logo Design'
+            },
+            {
+                folder: 'PUBG_Keyart',
+                title: 'PUBG Keyart 2',
+                thumb: 'portfolio_images/PUBG_Keyart/PUBG_Keyart_Thumb2.png',
+                images: ["PUBG_Keyart_001.jpg","PUBG_Keyart_002.png","PUBG_Keyart_003.png","PUBG_Keyart_004.png","PUBG_Keyart_005.jpg","PUBG_Keyart_006.jpg","PUBG_Keyart_007.jpg","PUBG_Keyart_008.png","PUBG_Keyart_009.png","PUBG_Keyart_010.png","PUBG_Keyart_011.jpg","PUBG_Keyart_012.png","PUBG_Keyart_013.png","PUBG_Keyart_014.jpg","PUBG_Keyart_015.png","PUBG_Keyart_016.jpg"],
+                description: `Key art developed for multiple campaigns and seasonal updates within a long-term live service environment.
+
+System Thinking
+Each artwork needed to clearly communicate gameplay changes while remaining consistent within PUBG's established visual universe. The production process spanned 2D and 3D workflows, including Unreal Engine captures and AI-assisted retouching.`,
+                year: '2022-2025',
+                role: 'Keyart Design'
+            },
+            {
+                folder: 'The_Silent_Sea',
+                title: 'The Silent Sea',
+                thumb: 'portfolio_images/The_Silent_Sea/The_Silent_Sea_Thumb.mp4',
+                thumbType: 'video',
+                images: ["The_Silent_Sea_001.jpg","The_Silent_Sea_002.jpg","The_Silent_Sea_003.jpg","The_Silent_Sea_004.jpg","The_Silent_Sea_005.jpg","The_Silent_Sea_006.jpg","The_Silent_Sea_007.jpg","The_Silent_Sea_008.jpg"],
+                description: `A space-set mystery thriller interpreted through a restrained and psychological visual approach. Rather than portraying a colorful sci-fi fantasy, the project focused on scarcity, tension, and unseen threats.
+
+Visual Decisions
+The moon was positioned as an overwhelming and hostile environment rather than a spectacle. Water reflections layered over the characters' faces symbolized the journey toward a scarce resource while subtly reinforcing emotional tension.
+
+Collaboration
+Due to heavy VFX compositing, lighting had to be meticulously planned. Close collaboration with lighting and VFX teams ensured consistency across separately captured and rendered elements.`,
+                year: '2021',
+                role: 'Keyart Design, Photoshoot Planning & On-Site Direction',
+                layout: [
+                    { images: ["The_Silent_Sea_009.png"] },
+                    { images: ["The_Silent_Sea_0010.png"] },
+                    { images: ["The_Silent_Sea_001.jpg"] },
+                    { images: ["The_Silent_Sea_003.jpg", "The_Silent_Sea_002.jpg"] },
+                    { images: ["The_Silent_Sea_0012.png", "The_Silent_Sea_0011.png"] },
+                    { images: ["The_Silent_Sea_008.jpg", "The_Silent_Sea_006.jpg", "The_Silent_Sea_005.jpg", "The_Silent_Sea_004.jpg", "The_Silent_Sea_007.jpg"] }
+
+                ]
+            },
+            {
+                folder: 'Extracurricular',
+                title: 'Extracurricular',
+                thumb: 'portfolio_images/Extracurricular/Extracurricular_Thumb.jpg',
+                images: ["Extracurricular_001.jpg","Extracurricular_002.jpg","Extracurricular_003.jpg","Extracurricular_004.jpg","Extracurricular_005.jpg","Extracurricular_006.jpg","Extracurricular_007.jpg","Extracurricular_008.jpg"],
+                description: `A story about the gradual collapse of identity beneath an ordinary surface. The visual concept represents moral erosion through chaotic black scribbles layered over the characters' faces.
+
+As the narrative progresses, the imagery increasingly obscures the characters, visually mirroring their descent into crime.`,
+                year: '2020',
+                role: 'Keyart Design, Photoshoot Planning & On-Site Direction, Logo Design',
+                layout: [
+                    { images: ["Extracurricular_OOH_001.mp4"] },
+                    { images: ["Extracurricular_0010.png"] },
+                    { images: ["Extracurricular_0012.png", "Extracurricular_0011.png"] },
+                    { images: ["Extracurricular_0013.png", "Extracurricular_0014.png", "Extracurricular_009.png"] },
+                    { images: ["Extracurricular_002.jpg", "Extracurricular_001.jpg"] },
+                    { images: ["Extracurricular_004.jpg", "Extracurricular_003.jpg"] },
+                    { images: ["Extracurricular_006.jpg", "Extracurricular_007.jpg", "Extracurricular_005.jpg"] },
+                    { images: ["Extracurricular_008.jpg"] }
+                    
+                ]
+            }, 
+            {
+                folder: 'NETFLIX_Product',
+                title: 'NETFLIX Product',
+                thumb: 'portfolio_images/NETFLIX_Product/NETFLIX_Product_Thumb.gif',
+                images: ["NETFLIX_Product_001.jpg","NETFLIX_Product_002.jpg","NETFLIX_Product_003.jpg","NETFLIX_Product_004.jpg","NETFLIX_Product_005.jpg","NETFLIX_Product_006.jpg","NETFLIX_Product_007.jpg","NETFLIX_Product_008.jpg","NETFLIX_Product_009.jpg","NETFLIX_Product_010.jpg","NETFLIX_Product_011.jpg","NETFLIX_Product_012.jpg","NETFLIX_Product_013.jpg","NETFLIX_Product_014.jpg","NETFLIX_Product_015.jpg","NETFLIX_Product_016.jpg","NETFLIX_Product_017.jpg","NETFLIX_Product_018.jpg","NETFLIX_Product_019.jpg","NETFLIX_Product_020.jpg","NETFLIX_Product_021.jpg"],
+                description: `Designed visual content assets for the Netflix platform, including box art, billboards, and title cards.
+
+System Thinking
+Because assets appear across a wide range of devices and formats, compositions were designed to remain effective across multiple sizes, crops, and aspect ratios. Visual themes were developed to align with target audiences while maintaining platform consistency.`,
+                year: '2020-2021',
+                role: 'Content Design',
+                layout: [
+                    { images: ["NETFLIX_Product_002.jpg"] },
+                    { images: ["NETFLIX_Product_004.jpg", "NETFLIX_Product_003.jpg"] },
+                    { images: ["Acr41732221873600-750212.jpg"] },
+                    { images: ["Acr417322218736002178422.jpg", "Acr41732221873600-1081820.jpg"] },
+                    { images: ["Acr41732221873600-1394814.jpg"] },
+                    { images: ["Acr417322218736001155516.jpg", "Acr41732221873600425318.jpg"] },
+                    { images: ["NETFLIX_Product_007.jpg"] },
+                    { images: ["NETFLIX_Product_006.jpg"] },
+                    { images: ["NETFLIX_Product_001.gif", "NETFLIX_Product_005.jpg"] },
+                    { images: ["NETFLIX_Product_011.jpg"] },
+                    { images: ["NETFLIX_Product_012.jpg"] },
+                    { images: ["NETFLIX_Product_016.jpg", "NETFLIX_Product_015.jpg", "NETFLIX_Product_014.jpg", "NETFLIX_Product_013.jpg"] },
+                    { images: ["NETFLIX_Product_019.jpg"] },
+                    { images: ["NETFLIX_Product_017.jpg", "NETFLIX_Product_021.jpg", "NETFLIX_Product_020.jpg"] }
+                ]
+            },
+            {
+                folder: 'Juvenile_Justice',
+                title: 'Juvenile Justice',
+                thumb: 'portfolio_images/Juvenile_Justice/Juvenile_Justice_Thumb.jpg',
+                images: ["Juvenile_Justice_001.jpg","Juvenile_Justice_002.jpg","Juvenile_Justice_003.jpg","Juvenile_Justice_004.jpg","Juvenile_Justice_005.jpg","Juvenile_Justice_006.jpg"],
+                description: `A campaign designed as a visual progression rather than a single static statement. The project addresses moral conflict and societal dilemmas surrounding juvenile crime.
+
+Campaign Structure
+Teaser: Confrontation
+Main: Reflection
+Post: Redemption
+
+The key art evolved from black-and-white to full color, mirroring the narrative's emotional shift.`,
+                year: '2022',
+                role: 'Keyart Design, Photoshoot Planning & On-Site Direction',
+                layout: [
+                    { images: ["Juvenile_Justice_002.jpg"] },
+                    { images: ["Juvenile_Justice_004.jpg"] },
+                    { images: ["Juvenile_Justice_003.jpg"] },
+                    { images: ["Juvenile_Justice_006.jpg", "Juvenile_Justice_005.jpg"] }
+                ]
+            },
+            {
+                folder: 'My_Name',
+                title: 'My Name',
+                thumb: 'portfolio_images/My_Name/My_Name_Thumb.jpg',
+                images: ["My_Name_001.jpg","My_Name_002.jpg","My_Name_003.png","My_Name_004.png"],
+                description: `Rather than emphasizing action, the project focused on the protagonist's psychological tension and fractured identity as she moves between organized crime and law enforcement. The visual interpretation centered on portraying a character who fully belongs to neither side.
+
+Visual Decisions
+In the teaser key art, the protagonist appears emotionally isolated despite being surrounded by vibrant neon-lit alleyways. The contrast emphasizes solitude within a visually loud environment.
+
+For the main key art, conflicting red and blue lighting was used to visualize the fracture between two opposing worlds. Color functions not as decoration, but as a narrative device expressing an identity caught between irreversible choices.`,
+                year: '2021',
+                role: 'Keyart Design, Photoshoot Planning & On-Site Direction, Logo Design',
+                layout: [
+                    { images: ["My_Name_008.png"] },
+                    { images: ["My_Name_005.png"] },
+                    { images: ["My_Name_006.png"] },
+                    { images: ["My_Name_007.png"] },
+                    { images: ["My_Name_001.jpg"] },
+                    { images: ["My_Name_002.jpg"] }
+                ]
+            },
+            {
+                folder: 'In_Our_Prime',
+                title: 'In Our Prime',
+                thumb: 'portfolio_images/In_Our_Prime/In_Our_Prime_Thumb.jpg',
+                images: ["In_Our_Prime_000.jpg","In_Our_Prime_001.jpg","In_Our_Prime_002.jpg","In_Our_Prime_003.jpg","In_Our_Prime_004.jpg","In_Our_Prime_005.jpg","In_Our_Prime_006.jpg","In_Our_Prime_007.jpg","In_Our_Prime_008.jpg","In_Our_Prime_009.jpg","In_Our_Prime_010.jpg"],
+                description: `The project explores abstract mathematics as a metaphor for human curiosity and the search for meaning. The visual approach needed to translate complex intellectual ideas into emotionally accessible imagery.
+
+Visual Decisions
+The Riemann zeta function was used not as decoration, but as a visual metaphor representing the act of seeking answers. Its structural rhythm was translated into compositional elements, subtly reflecting the characters' internal journeys.`,
+                year: '2022',
+                role: 'Keyart Design, Logo Design',
+                layout: [
+                    { images: ["In_Our_Prime_001.jpg", "In_Our_Prime_010.jpg"] },
+                    { images: ["In_Our_Prime_004.jpg", "In_Our_Prime_003.jpg"] },
+                    { images: ["In_Our_Prime_007.jpg", "In_Our_Prime_006.jpg", "In_Our_Prime_005.jpg"] },
+                    { images: ["In_Our_Prime_009.jpg", "In_Our_Prime_008.jpg"] }
+                ]
+            },
+            {
+                folder: 'Roman',
+                title: 'Roman',
+                thumb: 'portfolio_images/Roman/Roman_Thumb.jpg',
+                images: ["Roman_001.jpg","Roman_002.jpg","Roman_003.jpg","Roman_004.jpg","Roman_005.jpg"],
+                description: `A story about an elderly couple living with dementia, focusing not on tragedy, but on enduring affection over time.
+
+Visual Decisions
+The composition was inspired by reminder wedding photography, emphasizing love that remains unchanged despite the passage of time. Warm backlighting was used as a metaphor for the sudden darkness entering their lives. Calligraphic elements were added to the darker areas, representing emotions that are difficult to express verbally.`,
+                year: '2019',
+                role: 'Keyart Design, Photoshoot Planning & On-Site Direction',
+                layout: [
+                    { images: ["Roman_002.jpg", "Roman_001.jpg"] },
+                    { images: ["Roman_003.jpg"] },
+                    { images: ["Roman_005.jpg", "Roman_004.jpg"] }
+                ]
+            },
+            {
+                folder: 'Jangsari_915',
+                title: 'Jangsari 9.15',
+                thumb: 'portfolio_images/Jangsari_915/Jangsari_915_Thumb.jpg',
+                images: ["Jangsari_915_000.jpg","Jangsari_915_001.jpg","Jangsari_915_002.jpg","Jangsari_915_003.jpg","Jangsari_915_004.jpg"],
+                description: `Based on a true wartime operation, the project required conveying the emotional weight of young soldiers departing without knowing their fate.
+
+Visual Decisions
+The teaser poster was composed like a final group photograph, subtly implying irreversible loss. The main poster shifted focus toward the soldiers' sense of duty amid the brutality of battle. For the scenario book, archival photographs were treated as if retrieved from water-damaged records, reinforcing historical realism.`,
+                year: '2019',
+                role: 'Keyart Design, Photoshoot Planning & On-Site Direction, Logo Design',
+                layout: [
+                    { images: ["Jangsari_915_002.jpg", "Jangsari_915_001.jpg"] },
+                    { images: ["Jangsari_915_004.jpg", "Jangsari_915_003.jpg"] }
+                ]
+            },
+            {
+                folder: 'Swing_Kids',
+                title: 'Swing Kids',
+                thumb: 'portfolio_images/Swing_Kids/Swing_Kids_Thumb.jpg',
+                images: ["Swing_Kids_001.jpg","Swing_Kids_002.jpg","Swing_Kids_003.jpg","Swing_Kids_004.jpg","Swing_Kids_005.jpg","Swing_Kids_006.jpg"],
+                description: `While dance was the central theme, the poster intentionally avoided a purely joyful depiction. Set during the Korean War, the story required acknowledging historical and ideological tension.
+
+Concept
+Dancing shoes were chosen as the sole visual focus, serving as a unifying symbol beyond nationality, gender, or ideology. Synchronized steps conveyed shared humanity within an inhumane context. Additional soundtrack posters explored a retro, energetic tone inspired by vinyl album art.`,
+                year: '2018',
+                role: 'Keyart Design',
+                layout: [
+                    { images: ["Swing_Kids_007.png"] },
+                    { images: ["Swing_Kids_008.png"] },
+                    { images: ["Swing_Kids_003.jpg", "Swing_Kids_004.jpg"] },
+                    { images: ["Swing_Kids_002.jpg"] },
+                    { images: ["Swing_Kids_005.jpg"] }
+                ]
+            },
+            {
+                folder: 'Mise-en-scene_Short_Film_Festival_2018',
+                title: 'Mise-en-scène',
+                thumb: 'portfolio_images/Mise-en-scene_Short_Film_Festival_2018/Mise-en-scene_Short_Film_Festival_2018_Thumb.jpg',
+                images: ["Mise-en-scene_Short_Film_Festival_2018_001.jpg","Mise-en-scene_Short_Film_Festival_2018_002.jpg","Mise-en-scene_Short_Film_Festival_2018_003.jpg","Mise-en-scene_Short_Film_Festival_2018_004.jpg","Mise-en-scene_Short_Film_Festival_2018_005.jpg","Mise-en-scene_Short_Film_Festival_2018_006.jpg","Mise-en-scene_Short_Film_Festival_2018_007.jpg","Mise-en-scene_Short_Film_Festival_2018_008.jpg","Mise-en-scene_Short_Film_Festival_2018_009.jpg","Mise-en-scene_Short_Film_Festival_2018_010.jpg","Mise-en-scene_Short_Film_Festival_2018_011.jpg"],
+                description: `A key art project for the Mise-en-scène Short Film Festival, representing multiple films across different genres.
+
+Visual Decisions
+Each film's character was illustrated in a distinct visual style tailored to its genre. Despite stylistic differences, the final composition was unified into a cohesive visual system. Although not selected, the project served as an exploration of genre interpretation and visual integration.`,
+                year: '2018',
+                role: 'Keyart Design, Illustration',
+                layout: [
+                    { images: ["Mise-en-scene_Short_Film_Festival_2018_004.jpg", "Mise-en-scene_Short_Film_Festival_2018_003.jpg", "Mise-en-scene_Short_Film_Festival_2018_002.jpg"] },
+                    { images: ["Mise-en-scene_Short_Film_Festival_2018_008.jpg", "Mise-en-scene_Short_Film_Festival_2018_006.jpg", "Mise-en-scene_Short_Film_Festival_2018_005.jpg"] },
+                    { images: ["Mise-en-scene_Short_Film_Festival_2018_010.jpg", "Mise-en-scene_Short_Film_Festival_2018_011.jpg", "Mise-en-scene_Short_Film_Festival_2018_009.jpg", "Mise-en-scene_Short_Film_Festival_2018_007.jpg"] },
+                    { images: ["Mise-en-scene_Short_Film_Festival_2018_001.jpg"] }
+                ]
+            },
+            
+            {
+                folder: 'Girl_Cops',
+                title: 'Girl Cops',
+                thumb: 'portfolio_images/Girl_Cops/Girl_Cops_Thumb.jpg',
+                images: ["Girl_Cops_001.jpg","Girl_Cops_002.jpg","Girl_Cops_003.jpg","Girl_Cops_004.jpg"],
+                description: `A buddy investigation comedy led by two female detectives, requiring a lighthearted reinterpretation of a crime-driven narrative.
+
+Visual Decisions
+A new-tro aesthetic inspired by hand-painted theater signage was used to establish a playful tone. The logo motif was derived from sliding police tire marks, reinforcing the film's speed, energy, and comedic rhythm.`,
+                year: '2019',
+                role: 'Keyart Design, Photoshoot Planning & On-Site Direction, Logo Design',
+                layout: [
+                    { images: ["Girl_Cops_002.jpg"] },
+                    { images: ["Girl_Cops_004.jpg", "Girl_Cops_003.jpg"] },
+                    { images: ["Girl_Cops_001.jpg"] }
+                ]
+            },            
+           
+        ];
+
+        // ========================================
+        // 3D CAROUSEL CONFIGURATION
+        // ========================================
+        // 반응형 radius 계산: 화면 너비의 50% (최소 300, 최대 900)
+        const BASE_RADIUS = 650; // 기준 radius
+        
+        const getResponsiveRadius = () => {
+            const width = window.innerWidth;
+            const radius = Math.min(Math.max(width * 0.5, 300), 900);
+            return radius;
+        };
+
+        // radius에 따른 스케일 배율 계산 (더 부드럽게 - 제곱근 사용)
+        const getScaleMultiplier = (radius) => {
+            // 기준 radius 대비 비율의 제곱근을 사용하여 변화폭을 줄임
+            const ratio = radius / BASE_RADIUS;
+            return Math.sqrt(ratio);
+        };
+
+        const carouselConfig = {
+            radius: getResponsiveRadius(),
+            autoRotateSpeed: 0.0004,
+            fastRotateSpeed: 0.0025, // 2배 빠른 속도
+            mouseInfluence: 0.0002,
+            verticalTilt: -5
+        };
+
+        // ========================================
+        // 3D CAROUSEL CLASS
+        // ========================================
+        class Carousel3D {
+            constructor(container, config, data) {
+                this.container = container;
+                this.config = config;
+                this.data = data;
+                this.items = [];
+                this.rotationY = 0;
+                this.targetRotationY = 0;
+                this.rotationX = config.verticalTilt;
+                this.targetRotationX = config.verticalTilt;
+                this.mouseX = 0;
+                this.mouseY = 0;
+                this.isContainerHovered = false; // 컨테이너 호버 상태
+                this.isItemHovered = false; // 개별 아이템 호버 상태
+                
+                this.init();
+                this.bindEvents();
+                this.animate();
+            }
+
+            init() {
+                const itemCount = this.data.length;
+                const gapMultiplier = 1;  // 간격은 고정
+                const angleStep = ((Math.PI * 2) / itemCount) * gapMultiplier;
+                const totalAnimationTime = 5000; // 5초
+                const delayPerItem = totalAnimationTime / itemCount;
+
+                this.data.forEach((project, index) => {
+                    const element = document.createElement('div');
+                    element.className = 'carousel-item';
+                    element.dataset.index = index;
+                    
+                    // 비디오 확장자 자동 감지 (.mp4, .webm, .mov)
+                    const videoExtensions = ['.mp4', '.webm', '.mov'];
+                    const thumbLower = project.thumb.toLowerCase();
+                    const isVideo = project.thumbType === 'video' || videoExtensions.some(ext => thumbLower.endsWith(ext));
+                    
+                    // Create image or video element
+                    if (isVideo) {
+                        const video = document.createElement('video');
+                        video.src = project.thumb;
+                        video.autoplay = true;
+                        video.muted = true;
+                        video.loop = true;
+                        video.playsInline = true;
+                        element.appendChild(video);
+                        
+                        // 비디오는 메타데이터 로드 후 크기 조정
+                        video.addEventListener('loadedmetadata', () => {
+                            this.adjustElementSize(element, video.videoWidth, video.videoHeight);
+                        });
+                    } else {
+                        const img = document.createElement('img');
+                        img.src = project.thumb;
+                        img.alt = project.title;
+                        img.loading = 'lazy';
+                        element.appendChild(img);
+                        
+                        // 이미지 로드 후 실제 비율에 맞게 크기 조정
+                        img.addEventListener('load', () => {
+                            this.adjustElementSize(element, img.naturalWidth, img.naturalHeight);
+                        });
+                    }
+                    
+                    // Calculate 3D position
+                    const angle = angleStep * index;
+                    element.dataset.angle = angle;
+
+                    // 세로 가운데 정렬 (randomY 제거)
+                    element.dataset.baseY = 0;
+
+                    // Random rotation
+                    const randomRotateY = (Math.random() - 0.5) * 15;
+                    const randomRotateX = (Math.random() - 0.5) * 8;
+                    element.dataset.rotateY = randomRotateY;
+                    element.dataset.rotateX = randomRotateX;
+
+                    // Click handler
+                    element.addEventListener('click', () => this.openProject(index));
+                    
+                    // 개별 아이템 호버 이벤트
+                    element.addEventListener('mouseenter', () => {
+                        this.isItemHovered = true;
+                        this.showHoverTitle(project.title);
+                        this.dimBottomText(true);
+                    });
+                    element.addEventListener('mouseleave', () => {
+                        this.isItemHovered = false;
+                        this.hideHoverTitle();
+                        this.dimBottomText(false);
+                    });
+
+                    this.container.appendChild(element);
+                    this.items.push(element);
+
+                    // Staggered appearance animation - all items appear within 5 seconds
+                    setTimeout(() => {
+                        element.classList.add('visible');
+                    }, index * delayPerItem);
+                });
+
+                this.updatePositions();
+            }
+
+            // 이미지/비디오 실제 비율에 맞게 요소 크기 조정
+            adjustElementSize(element, naturalWidth, naturalHeight) {
+                const maxWidth = 300; // 최대 너비
+                const maxHeight = 400; // 최대 높이
+                const aspectRatio = naturalWidth / naturalHeight;
+                
+                let width, height;
+                
+                if (aspectRatio > 1) {
+                    // 가로형 이미지
+                    width = Math.min(maxWidth, naturalWidth);
+                    height = width / aspectRatio;
+                    if (height > maxHeight) {
+                        height = maxHeight;
+                        width = height * aspectRatio;
+                    }
+                } else {
+                    // 세로형 이미지
+                    height = Math.min(maxHeight, naturalHeight);
+                    width = height * aspectRatio;
+                    if (width > maxWidth) {
+                        width = maxWidth;
+                        height = width / aspectRatio;
+                    }
+                }
+                
+                element.style.width = `${width}px`;
+                element.style.height = 'auto';
+            }
+
+            bindEvents() {
+                document.addEventListener('mousemove', (e) => {
+                    this.mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+                    this.mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (e.touches.length > 0) {
+                        this.mouseX = (e.touches[0].clientX / window.innerWidth - 0.5) * 2;
+                        this.mouseY = (e.touches[0].clientY / window.innerHeight - 0.5) * 2;
+                    }
+                });
+
+                // 캐러셀 컨테이너 영역 호버 감지 (hero-3d 섹션 전체)
+                const heroSection = document.getElementById('hero3d');
+                heroSection.addEventListener('mouseenter', () => {
+                    this.isContainerHovered = true;
+                });
+                heroSection.addEventListener('mouseleave', () => {
+                    this.isContainerHovered = false;
+                });
+
+                // 창 크기 변경 시 radius 업데이트
+                window.addEventListener('resize', () => {
+                    this.config.radius = getResponsiveRadius();
+                });
+            }
+
+            updatePositions() {
+                const itemCount = this.items.length;
+                
+                this.items.forEach((item, index) => {
+                    const baseAngle = parseFloat(item.dataset.angle);
+                    const angle = baseAngle + this.rotationY;
+                    
+                    const z = Math.cos(angle) * this.config.radius;
+                    const baseY = parseFloat(item.dataset.baseY);
+                    const y = baseY;
+                    
+                    // Z값에 따른 원근 비율 계산 (뒤쪽일수록 작은 값)
+                    const normalizedZ = (z + this.config.radius) / (this.config.radius * 2);
+                    const perspectiveFactor = 0.4 + normalizedZ * 0.6; // 0.4 ~ 1.0 범위
+                    
+                    // X 좌표에 원근 비율 적용 (뒤쪽 이미지는 간격이 좁아짐)
+                    const x = Math.sin(angle) * this.config.radius * perspectiveFactor;
+                    
+                    // 각 아이템이 원의 접선 방향을 바라보도록 회전 (360 / itemCount 도씩)
+                    const facingAngle = (angle * -180 / Math.PI);
+
+                    // Calculate depth-based scale with responsive multiplier
+                    const scaleMultiplier = getScaleMultiplier(this.config.radius);
+                    let scale = (0.5 + normalizedZ * 0.5) * scaleMultiplier;
+                    const opacity = 1;
+
+                    // 호버 시 현재 위치에서 1.2배 확대
+                    const isHovered = item.matches(':hover');
+                    if (isHovered) {
+                        scale *= 1.2;
+                    }
+
+                    item.style.transform = `
+                        translate(-50%, -50%)
+                        translateX(${x}px)
+                        translateY(${y}px)
+                        translateZ(${z}px)
+                        rotateY(${-facingAngle}deg)
+                        scale(${scale})
+                    `;
+                    item.style.opacity = opacity;
+                    item.style.zIndex = isHovered ? 5000 : Math.round(normalizedZ * 100);
+                });
+            }
+
+            animate() {
+                // 마우스 위치에 따른 회전 방향 결정
+                // mouseX > 0 (오른쪽): 반시계방향 (음수)
+                // mouseX < 0 (왼쪽): 시계방향 (양수)
+                // mouseX = 0 (중앙): 회전 없음
+                
+                let rotationDirection = 0;
+                if (this.isContainerHovered && !this.isItemHovered) {
+                    rotationDirection = -this.mouseX * this.config.fastRotateSpeed * 10;
+                } else {
+                    rotationDirection = -this.mouseX * this.config.autoRotateSpeed * 5;
+                }
+                
+                // Auto rotation based on mouse position
+                this.targetRotationY += rotationDirection;
+
+                // Vertical tilt based on mouse Y
+                this.targetRotationX = this.config.verticalTilt + this.mouseY * 5;
+
+                // Smooth interpolation
+                this.rotationY += (this.targetRotationY - this.rotationY) * 0.03;
+                this.rotationX += (this.targetRotationX - this.rotationX) * 0.05;
+
+                // Update container rotation
+                this.container.style.transform = `
+                    translate(-50%, -50%)
+                    rotateX(${this.rotationX}deg)
+                `;
+
+                this.updatePositions();
+                requestAnimationFrame(() => this.animate());
+            }
+
+            openProject(index) {
+                const project = this.data[index];
+                openModal(project);
+            }
+
+            showHoverTitle(title) {
+                const leftTitle = document.getElementById('hoverTitleLeft');
+                const rightTitle = document.getElementById('hoverTitleRight');
+                leftTitle.textContent = title;
+                rightTitle.textContent = title;
+                leftTitle.classList.add('visible');
+                rightTitle.classList.add('visible');
+            }
+
+            hideHoverTitle() {
+                const leftTitle = document.getElementById('hoverTitleLeft');
+                const rightTitle = document.getElementById('hoverTitleRight');
+                leftTitle.classList.remove('visible');
+                rightTitle.classList.remove('visible');
+            }
+
+            dimBottomText(dim) {
+                const bottomBrand = document.getElementById('bottomBrand');
+                const bottomSubtitleContainer = document.getElementById('bottomSubtitleContainer');
+                if (dim) {
+                    bottomBrand.classList.add('dimmed');
+                    bottomSubtitleContainer.classList.add('dimmed');
+                } else {
+                    bottomBrand.classList.remove('dimmed');
+                    bottomSubtitleContainer.classList.remove('dimmed');
+                }
+            }
+        }
+
+        // ========================================
+        // MODAL FUNCTIONALITY
+        // ========================================
+        const body = document.body;
+        const projectModal = document.getElementById('projectModal');
+        const modalHero = document.getElementById('modalHero');
+        const modalScrollContent = document.getElementById('modalScrollContent');
+        const galleryContainer = document.getElementById('galleryContainer');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalDescription = document.getElementById('modalDescription');
+        const modalRole = document.getElementById('modalRole');
+        const modalYear = document.getElementById('modalYear');
+
+        function openModal(project) {
+            modalTitle.textContent = project.title;
+            modalDescription.textContent = project.description;
+            modalRole.textContent = project.role || 'Design';
+            modalYear.textContent = project.year || '2024';
+
+            // 히어로 이미지 초기화
+            modalHero.innerHTML = '';
+            galleryContainer.innerHTML = '';
+
+            // 1번 이미지를 히어로로 설정
+            if (project.images.length > 0) {
+                const firstImgName = project.images[0];
+                const isVideo = firstImgName.endsWith('.mp4');
+                let heroEl;
+                
+                if (isVideo) {
+                    heroEl = document.createElement('video');
+                    heroEl.src = 'portfolio_images/' + project.folder + '/' + firstImgName;
+                    heroEl.autoplay = true;
+                    heroEl.muted = true;
+                    heroEl.loop = true;
+                    heroEl.playsInline = true;
+                } else {
+                    heroEl = document.createElement('img');
+                    heroEl.src = 'portfolio_images/' + project.folder + '/' + firstImgName;
+                    heroEl.alt = project.title;
+                }
+                modalHero.appendChild(heroEl);
+            }
+
+            // layout 속성이 있으면 레이아웃대로, 없으면 기존 1단 방식
+            if (project.layout && project.layout.length > 0) {
+                // layout 배열 기반으로 렌더링
+                project.layout.forEach(function(row) {
+                    // columns 값이 있으면 사용, 없으면 images 개수로 자동 결정
+                    const columnCount = row.columns || row.images.length;
+                    
+                    const rowEl = document.createElement('div');
+                    rowEl.className = 'gallery-row cols-' + columnCount;
+                    
+                    const items = [];
+                    
+                    row.images.forEach(function(imgName) {
+                        const itemEl = document.createElement('div');
+                        itemEl.className = 'gallery-item';
+                        
+                        const isVideo = imgName.endsWith('.mp4');
+                        let el;
+                        if (isVideo) {
+                            el = document.createElement('video');
+                            el.src = 'portfolio_images/' + project.folder + '/' + imgName;
+                            el.autoplay = true;
+                            el.muted = true;
+                            el.loop = true;
+                            el.playsInline = true;
+                        } else {
+                            el = document.createElement('img');
+                            el.src = 'portfolio_images/' + project.folder + '/' + imgName;
+                            el.alt = project.title;
+                        }
+                        itemEl.appendChild(el);
+                        rowEl.appendChild(itemEl);
+                        items.push({ element: itemEl, media: el, isVideo: isVideo });
+                    });
+                    
+                    galleryContainer.appendChild(rowEl);
+                    
+                    // 2단 이상일 때 비율 계산
+                    if (row.images.length >= 2) {
+                        calculateRowRatios(rowEl, items);
+                    }
+                });
+            } else {
+                // 기존 방식: 2번 이미지부터 1단으로 추가
+                project.images.slice(1).forEach(function(imgName) {
+                    const isVideo = imgName.endsWith('.mp4');
+                    let el;
+                    if (isVideo) {
+                        el = document.createElement('video');
+                        el.src = 'portfolio_images/' + project.folder + '/' + imgName;
+                        el.autoplay = true;
+                        el.muted = true;
+                        el.loop = true;
+                        el.playsInline = true;
+                    } else {
+                        el = document.createElement('img');
+                        el.src = 'portfolio_images/' + project.folder + '/' + imgName;
+                        el.alt = project.title;
+                    }
+                    galleryContainer.appendChild(el);
+                });
+            }
+
+            // 스크롤 위치 초기화
+            modalScrollContent.scrollTop = 0;
+
+            body.classList.add('modal-open');
+            projectModal.classList.add('active');
+        }
+
+        // 이미지/비디오 비율을 계산해서 flex-basis 적용
+        function calculateRowRatios(rowEl, items) {
+            const gap = 10; // CSS gap 값
+            let loadedCount = 0;
+            const ratios = [];
+            
+            items.forEach(function(item, index) {
+                if (item.isVideo) {
+                    // 비디오는 loadedmetadata 이벤트 사용
+                    item.media.addEventListener('loadedmetadata', function() {
+                        ratios[index] = item.media.videoWidth / item.media.videoHeight;
+                        loadedCount++;
+                        if (loadedCount === items.length) {
+                            applyRatios(rowEl, items, ratios, gap);
+                        }
+                    });
+                    // 이미 로드된 경우
+                    if (item.media.videoWidth > 0) {
+                        ratios[index] = item.media.videoWidth / item.media.videoHeight;
+                        loadedCount++;
+                        if (loadedCount === items.length) {
+                            applyRatios(rowEl, items, ratios, gap);
+                        }
+                    }
+                } else {
+                    // 이미지는 load 이벤트 사용
+                    item.media.addEventListener('load', function() {
+                        ratios[index] = item.media.naturalWidth / item.media.naturalHeight;
+                        loadedCount++;
+                        if (loadedCount === items.length) {
+                            applyRatios(rowEl, items, ratios, gap);
+                        }
+                    });
+                    // 이미 로드된 경우 (캐시)
+                    if (item.media.complete && item.media.naturalWidth > 0) {
+                        ratios[index] = item.media.naturalWidth / item.media.naturalHeight;
+                        loadedCount++;
+                        if (loadedCount === items.length) {
+                            applyRatios(rowEl, items, ratios, gap);
+                        }
+                    }
+                }
+            });
+        }
+
+        // 비율에 따라 flex-basis 계산 및 적용
+        function applyRatios(rowEl, items, ratios, gap) {
+            const totalRatio = ratios.reduce(function(sum, r) { return sum + r; }, 0);
+            const totalGap = gap * (items.length - 1);
+            
+            items.forEach(function(item, index) {
+                const percentage = (ratios[index] / totalRatio) * 100;
+                // gap을 고려한 보정
+                const adjustedWidth = 'calc(' + percentage + '% - ' + (totalGap * ratios[index] / totalRatio) + 'px)';
+                item.element.style.flexBasis = adjustedWidth;
+                item.element.style.flexGrow = '0';
+                item.element.style.flexShrink = '0';
+            });
+        }
+
+        function closeModal() {
+            projectModal.classList.remove('active');
+            body.classList.remove('modal-open');
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // ========================================
+        // INITIALIZE
+        // ========================================
+        const carouselContainer = document.getElementById('carouselContainer');
+        const carousel = new Carousel3D(carouselContainer, carouselConfig, projectData);
+
+        // ========================================
+        // AXIS INDICATOR CONTROL
+        // ========================================
+        const axisIndicator = document.getElementById('axisIndicator');
+        const axisContainer = document.getElementById('axisContainer');
+        let isDraggingAxis = false;
+        let axisStartX = 0;
+        let axisStartY = 0;
+
+        axisIndicator.addEventListener('mousedown', (e) => {
+            isDraggingAxis = true;
+            axisStartX = e.clientX;
+            axisStartY = e.clientY;
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDraggingAxis) return;
+            
+            const deltaX = e.clientX - axisStartX;
+            const deltaY = e.clientY - axisStartY;
+            
+            // 캐러셀 회전에 반영
+            carousel.targetRotationY += deltaX * 0.01;
+            carousel.targetRotationX += deltaY * 0.1;
+            
+            axisStartX = e.clientX;
+            axisStartY = e.clientY;
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDraggingAxis = false;
+        });
+
+        // 캐러셀 회전에 따라 좌표계도 동기화
+        function syncAxisWithCarousel() {
+            const carouselRotY = carousel.rotationY * (180 / Math.PI) * 0.5;
+            const carouselRotX = carousel.rotationX;
+            axisContainer.style.transform = `rotateX(${-20 + carouselRotX}deg) rotateY(${-20 + carouselRotY}deg)`;
+            requestAnimationFrame(syncAxisWithCarousel);
+        }
+        syncAxisWithCarousel();
+
+        // ========================================
+        // GRID BACKGROUND GENERATION
+        // ========================================
+        function generateGrid() {
+            const gridLines = document.getElementById('gridLines');
+            const gridNumber = document.getElementById('gridNumber');
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const offset = 20; // 20px 여백
+            
+            // 격자 간격: (화면 너비 - 40px) / 10 (양옆 20px씩 여백)
+            const cellSize = (viewportWidth - 40) / 8;
+            
+            // 가로선 개수 (10줄)
+            const horizontalLines = 10;
+            // 세로선 개수 (10줄)
+            const verticalLines = 10;
+            
+            gridLines.innerHTML = '';
+            
+            // 가로선 생성 - 상단 20px부터 시작
+            for (let i = 0; i <= horizontalLines; i++) {
+                const line = document.createElement('div');
+                line.className = 'grid-horizontal';
+                line.style.top = `${offset + i * cellSize}px`;
+                gridLines.appendChild(line);
+            }
+            
+            // 세로선 생성 - 좌측 20px부터 시작
+            for (let i = 0; i <= verticalLines; i++) {
+                const line = document.createElement('div');
+                line.className = 'grid-vertical';
+                line.style.left = `${offset + i * cellSize}px`;
+                gridLines.appendChild(line);
+            }
+            
+            // 대각선 크기 업데이트
+            const diagonals = document.querySelectorAll('.grid-diagonal');
+            diagonals.forEach(diagonal => {
+                diagonal.style.width = `${cellSize}px`;
+                diagonal.style.height = `${cellSize}px`;
+            });
+            
+            // 대각선 선 길이 업데이트 (cellSize * sqrt(2))
+            const diagonalLength = cellSize * Math.sqrt(2);
+            document.documentElement.style.setProperty('--diagonal-length', `${diagonalLength}px`);
+            
+            // 숫자 텍스트 위치 설정 - 왼쪽
+            const gridNumber15 = document.getElementById('gridNumber15');
+            const gridNumber18 = document.getElementById('gridNumber18');
+            const gridNumber22 = document.getElementById('gridNumber22');
+            const gridNumber25 = document.getElementById('gridNumber25');
+            
+            // 숫자 텍스트 위치 설정 - 오른쪽
+            const gridNumber15R = document.getElementById('gridNumber15R');
+            const gridNumber18R = document.getElementById('gridNumber18R');
+            const gridNumber22R = document.getElementById('gridNumber22R');
+            const gridNumber25R = document.getElementById('gridNumber25R');
+            
+            // 화면 비율에 따른 간격 배수 계산 (1.2:1 이하면 2배, 아니면 1배)
+            const aspectRatio = viewportWidth / viewportHeight;
+            const spacingMultiplier = aspectRatio <= 1.2 ? 2 : 1;
+            
+            // 첫 번째(15)는 항상 cellSize * 1 위치에 고정
+            if (gridNumber15) {
+                gridNumber15.style.top = `${offset + cellSize}px`;
+            }
+            if (gridNumber18) {
+                gridNumber18.style.top = `${offset + cellSize + cellSize * spacingMultiplier}px`;
+            }
+            if (gridNumber22) {
+                gridNumber22.style.top = `${offset + cellSize + cellSize * spacingMultiplier * 2}px`;
+            }
+            if (gridNumber25) {
+                gridNumber25.style.top = `${offset + cellSize + cellSize * spacingMultiplier * 3}px`;
+            }
+            
+            if (gridNumber15R) {
+                gridNumber15R.style.top = `${offset + cellSize}px`;
+            }
+            if (gridNumber18R) {
+                gridNumber18R.style.top = `${offset + cellSize + cellSize * spacingMultiplier}px`;
+            }
+            if (gridNumber22R) {
+                gridNumber22R.style.top = `${offset + cellSize + cellSize * spacingMultiplier * 2}px`;
+            }
+            if (gridNumber25R) {
+                gridNumber25R.style.top = `${offset + cellSize + cellSize * spacingMultiplier * 3}px`;
+            }
+
+            // Top Description 위치 설정: left = 40 + ((전체창길이-40)/10)*2
+            const topDescription = document.getElementById('topDescription');
+            const topLinks = document.getElementById('topLinks');
+            const layoutOffset = 40;
+            const layoutCellSize = (viewportWidth - 40) / 8;
+            
+            if (topDescription) {
+                topDescription.style.left = `${layoutOffset + layoutCellSize * 2}px`;
+            }
+            
+            // Top Links 위치 설정: right = 40 + (전체창길이-40)/10
+            if (topLinks) {
+                topLinks.style.right = `${layoutOffset + layoutCellSize}px`;
+            }
+
+            // Bottom Brand 크기 설정: 화면 가로 크기에 맞게 동적 조절
+            const bottomBrand = document.getElementById('bottomBrand');
+            
+            if (bottomBrand) {
+                // 텍스트가 좌우 40px 여백 안에 꽉 차도록 크기 계산
+                const availableWidth = viewportWidth - 80; // 좌우 40px씩
+                const fontSize = availableWidth / 4; // CⓃST는 4글자이므로
+                bottomBrand.style.fontSize = `${fontSize * 1.2}px`;
+            }
+        }
+        
+        generateGrid();
+        window.addEventListener('resize', generateGrid);
+    </script>
+</body>
+</html>
