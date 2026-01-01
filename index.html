@@ -181,6 +181,17 @@
             pointer-events: none;
         }
 
+        /* 모든 비디오 컨트롤 숨김 */
+        video::-webkit-media-controls {
+            display: none !important;
+        }
+        video::-webkit-media-controls-enclosure {
+            display: none !important;
+        }
+        video::-webkit-media-controls-panel {
+            display: none !important;
+        }
+
         /* 호버시 20% 확대 - JS에서 처리 */
         .carousel-item:hover {
             z-index: 5000 !important;
@@ -1509,6 +1520,11 @@ A new-tro aesthetic inspired by hand-painted theater signage was used to establi
                         video.muted = true;
                         video.loop = true;
                         video.playsInline = true;
+                        video.controls = false; // 재생바 숨김
+                        video.setAttribute('webkit-playsinline', 'true'); // iOS Safari용
+                        video.setAttribute('x5-playsinline', 'true'); // 일부 안드로이드용
+                        video.disablePictureInPicture = true;
+                        video.controlsList = 'nodownload nofullscreen noremoteplayback';
                         
                         // WebM인 경우 poster 이미지 설정 (fallback)
                         if (isWebM && project.thumbFallback) {
@@ -1517,13 +1533,26 @@ A new-tro aesthetic inspired by hand-painted theater signage was used to establi
                         
                         element.appendChild(video);
                         
+                        // Safari 자동재생 강제 시도
+                        video.addEventListener('loadeddata', () => {
+                            const playPromise = video.play();
+                            if (playPromise !== undefined) {
+                                playPromise.catch(() => {
+                                    // 자동재생 실패 시 muted 확인 후 재시도
+                                    video.muted = true;
+                                    video.play().catch(() => {});
+                                });
+                            }
+                        });
+                        
                         // 비디오는 메타데이터 로드 후 크기 조정
                         video.addEventListener('loadedmetadata', () => {
                             this.adjustElementSize(element, video.videoWidth, video.videoHeight);
                         });
                     } else {
                         const img = document.createElement('img');
-                        img.src = project.thumb;
+                        // Safari fallback인 경우 thumbFallback 사용, 아니면 기존 thumb 사용
+                        img.src = useFallback ? project.thumbFallback : project.thumb;
                         img.alt = project.title;
                         img.loading = 'lazy';
                         element.appendChild(img);
@@ -1780,6 +1809,17 @@ A new-tro aesthetic inspired by hand-painted theater signage was used to establi
                     heroEl.muted = true;
                     heroEl.loop = true;
                     heroEl.playsInline = true;
+                    heroEl.controls = false;
+                    heroEl.setAttribute('webkit-playsinline', 'true');
+                    heroEl.setAttribute('x5-playsinline', 'true');
+                    heroEl.disablePictureInPicture = true;
+                    // Safari 자동재생 강제
+                    heroEl.addEventListener('loadeddata', function() {
+                        heroEl.play().catch(function() {
+                            heroEl.muted = true;
+                            heroEl.play().catch(function() {});
+                        });
+                    });
                 } else {
                     heroEl = document.createElement('img');
                     heroEl.src = 'portfolio_images/' + project.folder + '/' + firstImgName;
@@ -1813,6 +1853,17 @@ A new-tro aesthetic inspired by hand-painted theater signage was used to establi
                             el.muted = true;
                             el.loop = true;
                             el.playsInline = true;
+                            el.controls = false;
+                            el.setAttribute('webkit-playsinline', 'true');
+                            el.setAttribute('x5-playsinline', 'true');
+                            el.disablePictureInPicture = true;
+                            // Safari 자동재생 강제
+                            el.addEventListener('loadeddata', function() {
+                                el.play().catch(function() {
+                                    el.muted = true;
+                                    el.play().catch(function() {});
+                                });
+                            });
                         } else {
                             el = document.createElement('img');
                             el.src = 'portfolio_images/' + project.folder + '/' + imgName;
@@ -1842,6 +1893,17 @@ A new-tro aesthetic inspired by hand-painted theater signage was used to establi
                         el.muted = true;
                         el.loop = true;
                         el.playsInline = true;
+                        el.controls = false;
+                        el.setAttribute('webkit-playsinline', 'true');
+                        el.setAttribute('x5-playsinline', 'true');
+                        el.disablePictureInPicture = true;
+                        // Safari 자동재생 강제
+                        el.addEventListener('loadeddata', function() {
+                            el.play().catch(function() {
+                                el.muted = true;
+                                el.play().catch(function() {});
+                            });
+                        });
                     } else {
                         el = document.createElement('img');
                         el.src = 'portfolio_images/' + project.folder + '/' + imgName;
